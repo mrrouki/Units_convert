@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnitéPro - Convertisseur d'Unités</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1a202c;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .converter {
+            padding: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .units-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .swap-btn {
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+            margin-bottom: 8px;
+        }
+
+        .swap-btn:hover {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+            transform: scale(1.05);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .convert-btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .clear-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .result h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .history {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .history h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .history-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-conversion {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .history-time {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UnitéPro</h1>
+            <p>Convertisseur professionnel d'unités entre les systèmes anglais et français</p>
+        </div>
+        
+        <div class="converter">
+            <div class="input-group">
+                <label for="category">Catégorie</label>
+                <select id="category">
+                    <option value="longueur">Longueur</option>
+                    <option value="superficie">Superficie</option>
+                    <option value="volume">Volume</option>
+                </select>
+            </div>
+
+            <div class="units-row">
+                <div class="input-group">
+                    <label for="fromUnit">De</label>
+                    <select id="fromUnit">
+                        <!-- Les options seront générées dynamiquement -->
+                    </select>
+                </div>
+
+                <button class="swap-btn" id="swapBtn" title="Échanger les unités">⇄</button>
+
+                <div class="input-group">
+                    <label for="toUnit">Vers</label>
+                    <select id="toUnit">
+                        <!-- Les options seront générées dynamiquement -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="value">Valeur à convertir</label>
+                <input type="number" id="value" placeholder="Entrez la valeur..." step="any">
+            </div>
+
+            <div class="action-buttons">
+                <button class="convert-btn" id="convertBtn">Convertir</button>
+                <button class="clear-btn" id="clearBtn">Effacer</button>
+            </div>
+
+            <div class="result" id="result" style="display: none;">
+                <h3>Résultat</h3>
+                <div class="result-value" id="resultValue"></div>
+            </div>
+
+            <div class="history">
+                <h3>Historique récent</h3>
+                <div id="historyList">
+                    <div style="text-align: center; color: #6b7280; padding: 20px;">Aucune conversion récente</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class UnitConverter {
+            constructor() {
+                this.conversionFactors = {
+                    longueur: {
+                        pouce: { millimetre: 25.4, centimetre: 2.54, metre: 0.0254, kilometre: 0.0000254 },
+                        pied: { millimetre: 304.8, centimetre: 30.48, metre: 0.3048, kilometre: 0.0003048 },
+                        yard: { millimetre: 914.4, centimetre: 91.44, metre: 0.9144, kilometre: 0.0009144 },
+                        mile: { millimetre: 1609344, centimetre: 160934.4, metre: 1609.344, kilometre: 1.609344 },
+                        millimetre: { pouce: 0.0393701, pied: 0.00328084, yard: 0.00109361, mile: 6.2137e-7 },
+                        centimetre: { pouce: 0.393701, pied: 0.0328084, yard: 0.0109361, mile: 6.2137e-6 },
+                        metre: { pouce: 39.3701, pied: 3.28084, yard: 1.09361, mile: 0.000621371 },
+                        kilometre: { pouce: 39370.1, pied: 3280.84, yard: 1093.61, mile: 0.621371 }
+                    },
+                    superficie: {
+                        'pouce²': { 'mm²': 645.16, 'cm²': 6.4516, 'm²': 0.00064516, 'km²': 6.4516e-10 },
+                        'pied²': { 'mm²': 92903.04, 'cm²': 929.0304, 'm²': 0.09290304, 'km²': 9.290304e-8 },
+                        'yard²': { 'mm²': 836127.36, 'cm²': 8361.2736, 'm²': 0.83612736, 'km²': 8.3612736e-7 },
+                        'mile²': { 'mm²': 2.58999e12, 'cm²': 2.58999e10, 'm²': 2589990, 'km²': 2.58999 },
+                        'mm²': { 'pouce²': 0.00155, 'pied²': 1.0764e-5, 'yard²': 1.196e-6, 'mile²': 3.861e-13 },
+                        'cm²': { 'pouce²': 0.155, 'pied²': 0.00107639, 'yard²': 0.000119599, 'mile²': 3.861e-11 },
+                        'm²': { 'pouce²': 1550, 'pied²': 10.7639, 'yard²': 1.19599, 'mile²': 3.861e-7 },
+                        'km²': { 'pouce²': 1.55e9, 'pied²': 1.076e7, 'yard²': 1.196e6, 'mile²': 0.386102 }
+                    },
+                    volume: {
+                        'pouce³': { 'mm³': 16387.064, 'cm³': 16.387064, 'm³': 0.000016387064, 'L': 0.016387064 },
+                        'pied³': { 'mm³': 28316846.592, 'cm³': 28316.846592, 'm³': 0.028316846592, 'L': 28.316846592 },
+                        'yard³': { 'mm³': 764554857.984, 'cm³': 764554.857984, 'm³': 0.764554857984, 'L': 764.554857984 },
+                        'gallon': { 'mm³': 3785411.784, 'cm³': 3785.411784, 'm³': 0.003785411784, 'L': 3.785411784 },
+                        'mm³': { 'pouce³': 6.1024e-5, 'pied³': 3.5315e-8, 'yard³': 1.308e-9, 'gallon': 2.6417e-7 },
+                        'cm³': { 'pouce³': 0.0610237, 'pied³': 3.5315e-5, 'yard³': 1.308e-6, 'gallon': 0.000264172 },
+                        'm³': { 'pouce³': 61023.7, 'pied³': 35.3147, 'yard³': 1.30795, 'gallon': 264.172 },
+                        'L': { 'pouce³': 61.0237, 'pied³': 0.0353147, 'yard³': 0.00130795, 'gallon': 0.264172 }
+                    }
+                };
+
+                this.unitLabels = {
+                    longueur: {
+                        anglais: ['pouce', 'pied', 'yard', 'mile'],
+                        francais: ['millimetre', 'centimetre', 'metre', 'kilometre']
+                    },
+                    superficie: {
+                        anglais: ['pouce²', 'pied²', 'yard²', 'mile²'],
+                        francais: ['mm²', 'cm²', 'm²', 'km²']
+                    },
+                    volume: {
+                        anglais: ['pouce³', 'pied³', 'yard³', 'gallon'],
+                        francais: ['mm³', 'cm³', 'm³', 'L']
+                    }
+                };
+
+                this.history = [];
+                this.initializeEventListeners();
+                this.updateUnitOptions();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('category').addEventListener('change', () => {
+                    this.updateUnitOptions();
+                    this.clearResult();
+                });
+
+                document.getElementById('convertBtn').addEventListener('click', () => {
+                    this.convert();
+                });
+
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearAll();
+                });
+
+                document.getElementById('swapBtn').addEventListener('click', () => {
+                    this.swapUnits();
+                });
+
+                document.getElementById('value').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.convert();
+                    }
+                });
+            }
+
+            updateUnitOptions() {
+                const category = document.getElementById('category').value;
+                const fromUnitSelect = document.getElementById('fromUnit');
+                const toUnitSelect = document.getElementById('toUnit');
+
+                // Sauvegarder les valeurs actuelles
+                const currentFrom = fromUnitSelect.value;
+                const currentTo = toUnitSelect.value;
+
+                fromUnitSelect.innerHTML = '';
+                toUnitSelect.innerHTML = '';
+
+                // Ajouter les options anglaises
+                this.unitLabels[category].anglais.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit;
+                    option.textContent = this.getUnitDisplayName(unit, 'anglais');
+                    fromUnitSelect.appendChild(option);
+                });
+
+                // Ajouter les options françaises
+                this.unitLabels[category].francais.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit;
+                    option.textContent = this.getUnitDisplayName(unit, 'francais');
+                    toUnitSelect.appendChild(option);
+                });
+
+                // Essayer de restaurer les valeurs précédentes si elles existent dans la nouvelle catégorie
+                if (currentFrom && fromUnitSelect.querySelector(`option[value="${currentFrom}"]`)) {
+                    fromUnitSelect.value = currentFrom;
+                }
+                if (currentTo && toUnitSelect.querySelector(`option[value="${currentTo}"]`)) {
+                    toUnitSelect.value = currentTo;
+                }
+            }
+
+            getUnitDisplayName(unit, type) {
+                const displayNames = {
+                    'pouce': 'Pouce (in)',
+                    'pied': 'Pied (ft)',
+                    'yard': 'Yard (yd)',
+                    'mile': 'Mile (mi)',
+                    'pouce²': 'Pouce carré (in²)',
+                    'pied²': 'Pied carré (ft²)',
+                    'yard²': 'Yard carré (yd²)',
+                    'mile²': 'Mile carré (mi²)',
+                    'pouce³': 'Pouce cube (in³)',
+                    'pied³': 'Pied cube (ft³)',
+                    'yard³': 'Yard cube (yd³)',
+                    'gallon': 'Gallon US (gal)',
+                    'millimetre': 'Millimètre (mm)',
+                    'centimetre': 'Centimètre (cm)',
+                    'metre': 'Mètre (m)',
+                    'kilometre': 'Kilomètre (km)',
+                    'mm²': 'Millimètre carré (mm²)',
+                    'cm²': 'Centimètre carré (cm²)',
+                    'm²': 'Mètre carré (m²)',
+                    'km²': 'Kilomètre carré (km²)',
+                    'mm³': 'Millimètre cube (mm³)',
+                    'cm³': 'Centimètre cube (cm³)',
+                    'm³': 'Mètre cube (m³)',
+                    'L': 'Litre (L)'
+                };
+
+                return displayNames[unit] || unit;
+            }
+
+            convert() {
+                const category = document.getElementById('category').value;
+                const fromUnit = document.getElementById('fromUnit').value;
+                const toUnit = document.getElementById('toUnit').value;
+                const value = parseFloat(document.getElementById('value').value);
+
+                if (isNaN(value)) {
+                    this.showResult('Veuillez entrer une valeur valide');
+                    return;
+                }
+
+                if (this.conversionFactors[category] && 
+                    this.conversionFactors[category][fromUnit] && 
+                    this.conversionFactors[category][fromUnit][toUnit]) {
+                    
+                    const factor = this.conversionFactors[category][fromUnit][toUnit];
+                    const result = value * factor;
+                    
+                    const resultText = `${value} ${this.getUnitSymbol(fromUnit)} = ${result.toLocaleString('fr-FR', { maximumFractionDigits: 6 })} ${this.getUnitSymbol(toUnit)}`;
+                    this.showResult(resultText);
+                    
+                    // Add to history
+                    this.addToHistory(value, this.getUnitSymbol(fromUnit), result, this.getUnitSymbol(toUnit));
+                } else {
+                    this.showResult('Conversion non supportée');
+                }
+            }
+
+            getUnitSymbol(unit) {
+                const symbols = {
+                    'pouce': 'in', 'pied': 'ft', 'yard': 'yd', 'mile': 'mi',
+                    'pouce²': 'in²', 'pied²': 'ft²', 'yard²': 'yd²', 'mile²': 'mi²',
+                    'pouce³': 'in³', 'pied³': 'ft³', 'yard³': 'yd³', 'gallon': 'gal',
+                    'millimetre': 'mm', 'centimetre': 'cm', 'metre': 'm', 'kilometre': 'km',
+                    'mm²': 'mm²', 'cm²': 'cm²', 'm²': 'm²', 'km²': 'km²',
+                    'mm³': 'mm³', 'cm³': 'cm³', 'm³': 'm³', 'L': 'L'
+                };
+                return symbols[unit] || unit;
+            }
+
+            showResult(message) {
+                const resultDiv = document.getElementById('result');
+                const resultValue = document.getElementById('resultValue');
+                
+                resultValue.textContent = message;
+                resultDiv.style.display = 'block';
+            }
+
+            clearResult() {
+                document.getElementById('result').style.display = 'none';
+            }
+
+            addToHistory(fromValue, fromUnit, toValue, toUnit) {
+                const historyItem = {
+                    from: `${fromValue} ${fromUnit}`,
+                    to: `${toValue.toLocaleString('fr-FR', { maximumFractionDigits: 6 })} ${toUnit}`,
+                    timestamp: new Date().toLocaleTimeString('fr-FR')
+                };
+
+                this.history.unshift(historyItem);
+                this.history = this.history.slice(0, 5); // Keep only last 5
+                this.updateHistoryDisplay();
+            }
+
+            updateHistoryDisplay() {
+                const historyList = document.getElementById('historyList');
+                
+                if (this.history.length === 0) {
+                    historyList.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">Aucune conversion récente</div>';
+                    return;
+                }
+
+                historyList.innerHTML = this.history.map(item => `
+                    <div class="history-item">
+                        <div class="history-conversion">${item.from} → ${item.to}</div>
+                        <div class="history-time">${item.timestamp}</div>
+                    </div>
+                `).join('');
+            }
+
+            swapUnits() {
+                const fromUnit = document.getElementById('fromUnit');
+                const toUnit = document.getElementById('toUnit');
+                const category = document.getElementById('category').value;
+                
+                const temp = fromUnit.value;
+                fromUnit.value = toUnit.value;
+                toUnit.value = temp;
+                
+                // Vérifier si les unités échangées sont valides pour cette catégorie
+                const isValidFrom = this.unitLabels[category].anglais.includes(fromUnit.value) || 
+                                  this.unitLabels[category].francais.includes(fromUnit.value);
+                const isValidTo = this.unitLabels[category].anglais.includes(toUnit.value) || 
+                                this.unitLabels[category].francais.includes(toUnit.value);
+                
+                // Si l'une des unités n'est pas valide, réinitialiser les options
+                if (!isValidFrom || !isValidTo) {
+                    this.updateUnitOptions();
+                }
+                
+                // Si une valeur est présente, convertir immédiatement
+                const value = document.getElementById('value').value;
+                if (value && !isNaN(parseFloat(value))) {
+                    this.convert();
+                }
+            }
+
+            clearAll() {
+                document.getElementById('value').value = '';
+                document.getElementById('result').style.display = 'none';
+            }
+        }
+
+        // Initialize the converter when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new UnitConverter();
+        });
+    </script>
+</body>
+</html>
